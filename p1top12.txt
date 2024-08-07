@@ -1,0 +1,680 @@
+P1:
+#include "stdafx.h"
+#include<glut.h>
+#include<stdio.h>
+int x1, y1, x2, y2; 
+void draw_pixel(int x, int y)
+{
+glColor3f(1.0,0.0,0.0); 
+glBegin(GL_POINTS);
+glVertex2i(x, y);
+glEnd();
+}
+void brenhams_line_draw(int x1, int yl, int x2, int y2)
+{
+int dx=x2-x1,dy=y2-y1;
+int p=2*dy*dx;
+int twoDy=2*dy;
+int twoDyMinusDx=2*(dy-dx); int x=x1,y=yl;
+if(dx<0)
+{
+x=x2;
+y=y2;
+x2-x1;
+}
+draw_pixel(x, y);
+while(x<x2)
+{ x++;
+if(p<0)
+p+-twoDy;
+else
+{
+y++;
+p+twoDyMinusDx;
+}
+ draw_pixel(x, y);
+
+}
+}
+void myInit()
+{ 
+	glClearColor(0.0,0.0,0.0,1.0);
+	glMatrixMode(GL_PROJECTION); 
+	glLoadIdentity(); 
+	gluOrtho2D(0.0, 500.0, 0.0, 500.0); 
+	glMatrixMode(GL_MODELVIEW); 
+}
+
+void display() {
+glClear(GL_COLOR_BUFFER_BIT);
+brenhams_line_draw(x1, y1, x2, y2); glFlush();
+}
+void main(int argc, char **argv) {
+printf("Enter Start Points (x1,y1)\n");
+scanf("%d%d", &x1,&y1);
+printf("Enter End Points (x2,y2)\n");
+scanf("%d%d", &x2,&y2);
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB);
+glutInitWindowSize(500, 500);
+glutInitWindowPosition(0, 0);
+glutCreateWindow("Bresenham's Line Drawing");
+myInit();
+glutDisplayFunc(display);
+glutMainLoop();
+}
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P2:
+#include "stdafx.h"
+#include <stdio.h>
+#include <glut.h>
+typedef float point2[2];
+point2 v[]={{-1.0, -0.58}, {1.0, -0.58}, {0.0, 1.15}};
+int n;
+void triangle(point2 a, point2 b, point2 c)
+{ glBegin(GL_TRIANGLES); glVertex2fv(a); glVertex2fv(c);
+glVertex2fv(b);
+glEnd();
+}
+void divide_triangle(point2 a, point2 b, point2 c, int m)
+{
+point2 v0, v1, v2;
+int j;
+if(m>0)
+{
+for(j=0; j<2; j++) v0[j]=(a[j]+b[j])/2; 
+for(j=0; j<2; j++) v1[j]=(a[j]+c[j])/2;
+for(j=0; j<2; j++) v2[j]=(b[j]+c[j])/2;
+divide_triangle(a, v0, v1, m-1);
+divide_triangle(c, v1, v2, m-1);
+divide_triangle(b, v2, v0, m-1);
+}
+else(triangle(a,b,c)); 
+}
+void display(void)
+{
+glClear(GL_COLOR_BUFFER_BIT);
+divide_triangle(v[0], v[1], v[2], n);
+glFlush();
+}
+void myinit()
+{
+glMatrixMode(GL_PROJECTION); glLoadIdentity();
+gluOrtho2D(-2.0, 2.0, -2.0, 2.0); glMatrixMode(GL_MODELVIEW); glClearColor (1.0, 1.0, 1.0, 1.0); glColor3f(0.0,0.0,0.0);
+}
+void main(int argc, char **argv)
+{
+printf(" No. of Subdivisions: ");
+scanf("%d",&n);
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB); glutInitWindowSize(500, 500);
+glutCreateWindow("Sierpinski Gasket 2D triangle");
+glutDisplayFunc(display); myinit();
+glutMainLoop();
+}
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P3:
+#include "stdafx.h"
+#include <stdio.h>
+#include <glut.h> // Corrected include statement
+
+typedef float point[3];
+
+point v[] = {{0.0, 0.0, 1.0}, {0.0, 0.942809, -0.33333}, {-0.816497, -0.471405, -0.333333}, {0.816497, -0.471405, -0.333333}};
+
+GLfloat theta[] = {0.0, 0.0, 0.0};
+int n;
+
+void triangle(point a, point b, point c) {
+    glBegin(GL_POLYGON);
+    glNormal3fv(a);
+    glVertex3fv(a);
+    glVertex3fv(b);
+    glVertex3fv(c);
+    glEnd();
+}
+
+void divide_triangle(point a, point b, point c, int m) {
+    point v1, v2, v3;
+    int j;
+    if (m > 0) {
+        for (j = 0; j < 3; j++) v1[j] = (a[j] + b[j]) / 2;
+        for (j = 0; j < 3; j++) v2[j] = (a[j] + c[j]) / 2;
+        for (j = 0; j < 3; j++) v3[j] = (b[j] + c[j]) / 2;
+        divide_triangle(a, v1, v2, m - 1);
+        divide_triangle(c, v2, v3, m - 1);
+        divide_triangle(b, v3, v1, m - 1);
+    } else {
+        triangle(a, b, c);
+    }
+}
+
+void tetrahedron(int m) {
+    glColor3f(1.0, 0.0, 0.0);
+    divide_triangle(v[0], v[1], v[2], m);
+    glColor3f(0.0, 1.0, 0.0);
+    divide_triangle(v[3], v[2], v[1], m);
+    glColor3f(0.0, 0.0, 1.0);
+    divide_triangle(v[0], v[3], v[1], m);
+    glColor3f(0.0, 0.0, 0.0);
+    divide_triangle(v[0], v[2], v[3], m);
+}
+
+void display(void) {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    tetrahedron(n);
+    glFlush();
+}
+
+void myReshape(int w, int h) {
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    if (w <= h)
+        glOrtho(-2.0, 2.0, -2.0 * (GLfloat) h / (GLfloat) w,
+                2.0 * (GLfloat) h / (GLfloat) w, -10.0, 10.0);
+    else
+        glOrtho(-2.0 * (GLfloat) w / (GLfloat) h,
+                2.0 * (GLfloat) w / (GLfloat) h, -2.0, 2.0, -10.0, 10.0);
+    glMatrixMode(GL_MODELVIEW);
+    glutPostRedisplay();
+}
+
+int main(int argc, char **argv) {
+    int i = 0;
+    printf("Enter value of N:");
+    scanf("%d", &i);
+    n = i;
+
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH);
+    glutInitWindowSize(500, 500);
+    glutCreateWindow("3D Tetrahedron Gasket");
+    glutReshapeFunc(myReshape);
+    glutDisplayFunc(display);
+
+    glEnable(GL_DEPTH_TEST);
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+
+    glutMainLoop();
+
+    return 0;
+}
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P4:
+#include "stdafx.h"
+#include <glut.h>
+#include <math.h>
+
+GLfloat vertices[3][2] = {
+    {0.0, 1.0},
+    {-0.5, -0.5},
+    {0.5, -0.5}
+};
+
+GLfloat angle = 0.0;
+GLfloat translateX = 0.0;
+GLfloat translateY = 0.0;
+GLfloat scaleX = 1.0;
+GLfloat scaleY = 1.0;
+
+void display() {
+    glClear(GL_COLOR_BUFFER_BIT);
+    glLoadIdentity();
+
+    glTranslatef(translateX, translateY, 0);
+    glRotatef(angle, 0, 0, 1);
+    glScalef(scaleX, scaleY, 1);
+
+    glColor3f(1, 1, 1);
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < 3; i++)
+        glVertex2fv(vertices[i]);
+    glEnd();
+
+    glFlush();
+}
+
+void menu(int option) {
+    switch (option) {
+        case 1:
+            translateX -= 0.1;
+            break;
+        case 2:
+            translateX += 0.1;
+            break;
+        case 3:
+            translateY -= 0.1;
+            break;
+        case 4:
+            translateY += 0.1;
+            break;
+        case 5:
+            scaleX += 0.1;
+            scaleY += 0.1;
+            break;
+        case 6:
+            scaleX -= 0.1;
+            scaleY -= 0.1;
+            break;
+        case 7:
+            angle += 10.0;
+            if (angle > 360) angle -= 360;
+            break;
+        case 8:
+            angle -= 10.0;
+            if (angle < 0) angle += 360;
+            break;
+        case 9:
+            angle = 0.0;
+            translateX = 0.0;
+            translateY = 0.0;
+            scaleX = 1.0;
+            scaleY = 1.0;
+            break;
+        case 10:
+            exit(0);
+            break;
+    }
+    glutPostRedisplay();
+}
+
+void createMenu() {
+    glutCreateMenu(menu);
+    glutAddMenuEntry("Translate Left", 1);
+    glutAddMenuEntry("Translate Right", 2);
+    glutAddMenuEntry("Translate Down", 3);
+    glutAddMenuEntry("Translate Up", 4);
+    glutAddMenuEntry("Scale Up", 5);
+    glutAddMenuEntry("Scale Down", 6);
+    glutAddMenuEntry("Rotate Clockwise", 7);
+    glutAddMenuEntry("Rotate Anti-clockwise", 8);
+    glutAddMenuEntry("Reset", 9);
+    glutAddMenuEntry("Exit", 10);
+    glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void init() {
+    glClearColor(0, 0, 0, 1);
+}
+
+void reshape(int w, int h) {
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(-1, 1, -1, 1);
+    glMatrixMode(GL_MODELVIEW);
+}
+
+int main(int argc, char** argv) {
+    glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+    glutInitWindowSize(800, 600);
+    glutCreateWindow("2D Transformations");
+    glutDisplayFunc(display);
+    glutReshapeFunc(reshape);
+    createMenu();
+    init();
+    glutMainLoop();
+    return 0;
+}
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P5:
+#include "stdafx.h" 
+#include "stdafx.h"
+#include <stdlib.h>
+#include <glut.h>
+GLfloat vertices[][3]={
+{-1,-1,-1},
+{1,-1,-1},
+{1,1,-1},
+{-1,1,-1},
+{-1,-1,1},
+{1,-1,1},
+{1,1,1},
+{-1,1,1},
+};
+GLint edges[][2] ={
+{0, 1},
+{1, 2},
+{2,3},
+{3, 0},
+{4, 5},
+{5, 6},
+{6, 7},
+{7, 4},
+{0, 4},
+{1,5},
+{2,6},
+{3,7}
+};
+GLfloat angleX=0.0;
+GLfloat angleY=0.0;
+GLfloat angleZ = 0 ;
+GLfloat translateX= 0.0;
+GLfloat translateY=0.0;
+GLfloat translateZ=0.0;
+GLfloat scaleX=1.0;
+GLfloat scaleY =1.2;
+GLfloat scaleZ=1.0;
+
+void display() {
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+glLoadIdentity();
+gluLookAt(3, 3, 3, 0, 0, 0, 0, 1, 0);
+glTranslatef(translateX, translateY, translateZ);
+glRotatef(angleX, 1, 0, 0);
+glRotatef(angleY, 0, 1, 0);
+glRotatef(angleZ, 0, 0, 1);
+glScalef(scaleX, scaleY, scaleZ);
+glColor3f(1, 1, 1);
+glBegin(GL_LINES);
+for (int i = 0 ; i < 12 ;i++) {
+glVertex3fv(vertices[edges[i][0]]);
+glVertex3fv(vertices[edges[i][1]]);
+}
+glEnd();
+glutSwapBuffers();
+}
+
+void idle() {
+angleX+= 0.5 ;
+if (angleX> 360)angleX-= 360;
+angleY+=0.5;
+if (angleY> 360)angleY-= 360;
+angleZ+=0.5;
+if (angleZ> 360 )angleZ-= 360;
+glutPostRedisplay();
+}
+
+void keyboard(unsigned char key, int x, int y) {
+switch (key) {
+case 'w':
+translateY+=0.1;
+break;
+case 's':
+translateY-=0.1;
+break;
+case 'a':
+translateX-=0.1;
+break;
+case 'd':
+translateX+=0.1;
+break;
+case 'q':
+translateZ+=0.1;
+break;
+case 'e':
+translateZ-=0.1;
+break;
+case '+':
+scaleX +=0.1;
+scaleY += 0.1;
+scaleZ += 0.1;
+break;
+case '-':
+scaleX -= 0.1;
+scaleY -= 0.1;
+scaleZ -= 0.1;
+break;
+case 'r':
+angleX = 0.0;
+angleY = 0.0;
+angleZ = 0.0;
+translateX = 0.0;
+translateY = 0.0;
+translateZ= 0.0;
+scaleX = 1.0;
+scaleY = 1.0;
+scaleZ = 1.0;
+break;
+case 27:
+exit(0);
+break;
+}
+glutPostRedisplay();
+}
+
+void init() {
+glClearColor(0, 0, 0, 1);
+glEnable(GL_DEPTH_TEST);
+}
+
+void reshape(int w, int h) {
+glViewport(0, 0, w, h);
+glMatrixMode(GL_PROJECTION);
+glLoadIdentity();
+gluPerspective(60, (float)w/h, 1, 100);
+glMatrixMode(GL_MODELVIEW);
+}
+
+int main(int argc, char** argv) {
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+glutInitWindowSize(800, 600);
+glutCreateWindow("3D Transformations");
+glutDisplayFunc(display);
+glutReshapeFunc(reshape);
+glutIdleFunc(idle);
+glutKeyboardFunc(keyboard);
+init();
+glutMainLoop();
+return 0;
+}
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P6:
+#include "stdafx.h"
+#include <glut.h>
+#include <math.h>
+
+int windowWidth = 800;
+int windowHeight = 600;
+int squareSize = 50;
+int squarePosX = 0;
+float animationSpeed = 1.0;
+
+void init() {
+glClearColor(0.0, 0.0, 0.0, 1.0);
+glMatrixMode(GL_PROJECTION);
+gluOrtho2D(0.0, windowWidth, 0.0, windowHeight);
+}
+
+void drawSquare() {
+glColor3f(1.0, 1.0, 1.0);
+glBegin(GL_QUADS);
+glVertex2i(squarePosX, windowHeight/2);
+glVertex2i(squarePosX + squareSize, windowHeight/2);
+glVertex2i(squarePosX + squareSize, windowHeight/2+ squareSize);
+glVertex2i(squarePosX, windowHeight/2+ squareSize);
+glEnd();
+}
+
+void display() {
+glClear(GL_COLOR_BUFFER_BIT);
+drawSquare();
+glutSwapBuffers();
+}
+
+void update(int value) {
+squarePosX += animationSpeed;
+if (squarePosX>windowWidth) {
+squarePosX = -squareSize;
+}
+animationSpeed += 0.01;
+glutPostRedisplay();
+glutTimerFunc(1000/60, update, 0);
+}
+
+int main(int argc, char** argv) {
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB); glutInitWindowSize(windowWidth, windowHeight); glutInitWindowPosition(100, 100);
+glutCreateWindow("Animation Effects with Varying Speed");
+init();
+glutDisplayFunc(display);
+glutTimerFunc(0, update, 0);
+glutMainLoop();
+return 0;
+}
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P7:
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+img = cv2.imread('carr.jpg')
+height, width = img.shape[:2]
+quad1 =img[ :height//2, :width//2]
+quad2 =img [:height//2, width//2:]
+quad3 =img[height//2:, :width//2]
+quad4 =img[height//2:, width//2:]
+plt.figure(figsize =(10,5))
+plt.subplot(1, 2, 1)
+plt.imshow(quad1)
+plt.title("1")
+plt.axis("off")
+plt.subplot(1, 2, 2)
+plt.imshow(quad2)
+plt.title("2")
+plt.axis("off")
+plt.figure(figsize=(10,5))
+plt.subplot(1, 2, 1)
+plt.imshow(quad3)
+plt.title("3")
+plt.axis("off")
+plt.subplot(1, 2, 2)
+plt.imshow(quad4)
+plt.title("4")
+plt.axis("off")
+plt.show()
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P8:
+import cv2
+import numpy as np
+# Load the image
+image_path = 'Modi.jpg'
+# Replace with the path to your image
+img = cv2.imread(image_path)
+# Get the image dimensions
+height, width, _ = img.shape
+# Define the transformation matrices
+rotation_matrix = cv2.getRotationMatrix2D((width/2, height/2), 45, 1) # Rotate by 45 degrees
+scaling_matrix = np.float32([[1.5, 0, 0], [0, 1.5, 0]]) # Scale by 1.5x
+translation_matrix = np.float32([[1, 0, 100], [0, 1, 50]]) # Translate by (100, 50)
+# Apply transformations
+rotated_img = cv2.warpAffine(img, rotation_matrix, (width, height))
+scaled_img = cv2.warpAffine(img, scaling_matrix, (int(width*1.5), int(height*1.5)))
+translated_img = cv2.warpAffine(img, translation_matrix, (width, height))
+# Display the original and transformed images
+cv2.imshow("Original Image", img)
+cv2.imshow("Rotated Image", rotated_img)
+cv2.imshow("Scaled Image", scaled_img)
+cv2.imshow("Translated Image", translated_img)
+# Wait for a key press and then close all windows
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P9:
+import cv2
+import numpy as np
+# Load the image
+image_path = 'fruit.jpg' # Replace with the path to your image
+img = cv2.imread(image_path)
+# Convert the image to grayscale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# Edge detection
+edges = cv2.Canny(gray, 100, 200) # Use Canny edge detector
+# Texture extraction
+kernel = np.ones((5, 5), np.float32) / 25 # Define a 5x5 averaging kernel
+texture = cv2.filter2D(gray, -1, kernel) # Apply the averaging filter for texture extraction
+# Display the original image, edges, and texture
+cv2.imshow("Original Image", img)
+cv2.imshow("Edges", edges)
+cv2.imshow("Texture", texture)
+# Wait for a key press and then close all windows
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P10:
+import numpy as np
+import cv2
+import matplotlib.pyplot as plt
+
+img = cv2.imread('carr.jpg', cv2.IMREAD_GRAYSCALE)
+image_array = np.array(img)
+print(image_array)
+
+
+def sharpen():
+    return np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
+
+
+def filtering(image, kernel):
+    m, n = kernel.shape
+    if m == n:
+        y, x = image.shape
+        y = y - m + 1  # shape of image - shape of kernel + 1
+        x = x - m + 1
+        new_image = np.zeros((y, x))
+        for i in range(y):
+            for j in range(x):
+                new_image[i][j] = np.sum(image[i:i + m, j:j + m] * kernel)
+    return new_image
+
+
+# Display the original and sharpened images
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 2, 1)
+plt.imshow(image_array, cmap='gray')
+plt.title("Original Grayscale Image")
+plt.axis("off")
+plt.subplot(1, 2, 2)
+plt.imshow(filtering(image_array, sharpen()), cmap='gray')
+plt.title("Blurred Image")
+plt.axis("off")
+plt.show()
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P11:
+import cv2
+import numpy as np
+image_path = '1.png'
+image = cv2.imread('images.jpg')
+# Convert the image to grayscale (contours work best on binary images)
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# Apply thresholding (you can use other techniques like Sobel edges)
+_, binary_image = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+# Find contours
+contours, _ = cv2.findContours(binary_image, cv2.RETR_EXTERNAL,
+cv2.CHAIN_APPROX_SIMPLE)
+# Draw all contours on the original image
+cv2.drawContours(image, contours, -1, (0, 255, 0), 3)
+# Display the result
+cv2.imshow('Contours', image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+P12:
+import cv2
+# Load the pre-trained Haar Cascade classifier for face detection
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+# Read the input image (replace 'your_image.jpg' with the actual image path)
+image_path = 'images.jpg'
+image = cv2.imread(image_path)
+# Convert the image to grayscale
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+# Detect faces in the image
+faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+# Draw rectangles around detected faces
+for (x, y, w, h) in faces:
+ cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
+# Save or display the result
+cv2.imwrite('detected_faces.jpg', image) # Save the result
+cv2.imshow('Detected Faces', image) # Display the result
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+----------------------------------------------------------------------------------------------------------------------------------------
